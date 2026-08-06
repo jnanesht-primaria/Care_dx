@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { searchPatientsAsTechnician, getPatientPendingBooking, updateTechnicianAppointmentStatus } from '../../../api/technician';
+import { searchPatientsAsTechnician, getPatientBookings, updateTechnicianAppointmentStatus } from '../../../api/technician';
 import './Billing.css';
 
 const Billing = () => {
@@ -9,8 +9,9 @@ const Billing = () => {
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
 
-  // ---- Booking data ----
-  const [booking, setBooking] = useState(null);
+  // ---- Bookings ----
+  const [bookings, setBookings] = useState([]);
+  const [selectedBookingOption, setSelectedBookingOption] = useState(''); // 'all' or booking_id
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -37,29 +38,30 @@ const Billing = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // ---- When patient is selected, fetch pending booking ----
-  const handlePatientSelect = (patient) => {
+  // ---- Select patient → fetch bookings ----
+  const handlePatientSelect = async (patient) => {
     setSelectedPatient(patient);
     setSearchQuery('');
     setSearchResults([]);
-    setBooking(null);
+    setBookings([]);
+    setSelectedBookingOption('');
     setError('');
     setSuccess('');
     setPaidAmount('');
-    fetchPendingBooking(patient.id);
-  };
-
-  const fetchPendingBooking = async (patientId) => {
     setLoading(true);
-    setError('');
+
     try {
-      const res = await getPatientPendingBooking(patientId);
-      setBooking(res.data);
-      setPaidAmount(res.data.paid_amount.toString());
+      const res = await getPatientBookings(patient.id);
+      const data = res.data;
+      if (data.bookings && data.bookings.length > 0) {
+        setBookings(data.bookings);
+        // Default: select the first booking or 'all'? We'll let user choose.
+        setSelectedBookingOption('all'); // or data.bookings[0].booking_id
+      } else {
+        setError('No bookings found for this patient.');
+      }
     } catch (err) {
-      const msg = err.response?.data?.message || 'No pending booking found.';
-      setError(msg);
-      setBooking(null);
+      setError('Failed to load bookings.');
     } finally {
       setLoading(false);
     }
@@ -68,7 +70,8 @@ const Billing = () => {
   const handleClearPatient = () => {
     setSelectedPatient(null);
     setSearchQuery('');
-    setBooking(null);
+    setBookings([]);
+    setSelectedBookingOption('');
     setPaidAmount('');
     setPaymentMode('Cash');
     setError('');
@@ -77,8 +80,19 @@ const Billing = () => {
 
   // ---- Submit payment ----
   const handleSubmit = async () => {
+    if (!selectedBookingOption) {
+      alert('Please select a booking or "All".');
+      return;
+    }
+    // If "all", we need to update all bookings? For simplicity, we'll handle one booking at a time.
+    // We'll restrict to single booking for payment.
+    if (selectedBookingOption === 'all') {
+      alert('Please select a specific booking to complete payment.');
+      return;
+    }
+    const booking = bookings.find(b => b.booking_id === parseInt(selectedBookingOption));
     if (!booking) {
-      alert('No booking to update.');
+      alert('Selected booking not found.');
       return;
     }
     const paid = parseFloat(paidAmount) || 0;
@@ -92,33 +106,43 @@ const Billing = () => {
     setError('');
     setSuccess('');
     try {
-      // Update booking status and payment (we need to update payment fields)
-      // Since we don't have a dedicated endpoint, we'll use the status update
-      // but ideally you'd have a payment update endpoint.
-      // For now, we'll call the status update and hope backend handles payment?
-      // Better: we need a dedicated payment endpoint. But we can extend the existing.
-      // We'll assume the backend has a PATCH /bookings/<id>/payment or similar.
-      // Since we don't have one, we'll just update status to 'Sample Collected' and hope.
-      // Actually, we can use the existing updateTechnicianAppointmentStatus (which updates status only).
-      // We'll need to add a new endpoint for payment.
-      // I'll provide a simpler solution: update booking status and store payment in session.
-      // For now, just alert success and clear.
+      // Update booking status (you might want a dedicated payment endpoint)
       await updateTechnicianAppointmentStatus(booking.booking_id, 'Sample Collected');
       setSuccess(`✅ Payment recorded for booking #${booking.booking_id}`);
-      setBooking({ ...booking, status: 'Sample Collected' });
+      // Refresh bookings
+      await handlePatientSelect(selectedPatient);
     } catch (err) {
-      const msg = err.response?.data?.message || 'Payment update failed.';
-      setError(msg);
+      setError('Payment update failed.');
     } finally {
       setLoading(false);
     }
   };
 
+  // ---- Get selected tests and total ----
+  const getSelectedData = () => {
+    if (!selectedBookingOption) return { tests: [], total: 0 };
+    if (selectedBookingOption === 'all') {
+      const allTests = [];
+      let total = 0;
+      bookings.forEach(b => {
+        allTests.push(...b.tests);
+        total += b.total_amount;
+      });
+      return { tests: allTests, total };
+    } else {
+      const booking = bookings.find(b => b.booking_id === parseInt(selectedBookingOption));
+      if (!booking) return { tests: [], total: 0 };
+      return { tests: booking.tests, total: booking.total_amount };
+    }
+  };
+
+  const { tests, total } = getSelectedData();
+
   return (
     <div className="billing-container">
       <div className="billing-header">
         <h2>🧾 Billing Form</h2>
-        <p>Select a patient to view their pending booking and complete payment.</p>
+        <p>Select a patient, choose a booking, and complete payment.</p>
       </div>
 
       {/* Patient Search */}
@@ -160,15 +184,42 @@ const Billing = () => {
         )}
       </section>
 
-      {/* Booking details */}
-      {selectedPatient && (
+      {/* Bookings Selection */}
+      {selectedPatient && bookings.length > 0 && (
+        <section className="booking-select-section">
+          <label className="section-label">📋 Select Booking</label>
+          <div className="booking-select-group">
+            <select
+              value={selectedBookingOption}
+              onChange={(e) => setSelectedBookingOption(e.target.value)}
+              className="booking-select"
+            >
+              <option value="">-- Choose --</option>
+              <option value="all">📌 Combine All</option>
+              {bookings.map(b => (
+                <option key={b.booking_id} value={b.booking_id}>
+                  # {b.booking_id} ({b.status}) - {new Date(b.booking_date).toLocaleDateString()}
+                </option>
+              ))}
+            </select>
+          </div>
+        </section>
+      )}
+
+      {/* Booking Details & Payment */}
+      {selectedBookingOption && bookings.length > 0 && (
         <section className="booking-section">
-          {loading && <p>Loading booking...</p>}
-          {error && <div className="billing-error">{error}</div>}
-          {booking && (
+          {loading ? (
+            <p>Loading...</p>
+          ) : error ? (
+            <div className="billing-error">{error}</div>
+          ) : tests.length > 0 ? (
             <>
-              <h3>Booking #{booking.booking_id}</h3>
-              <p><strong>Status:</strong> {booking.status}</p>
+              <h3>
+                {selectedBookingOption === 'all'
+                  ? 'All Tests (Combined)'
+                  : `Booking #${selectedBookingOption}`}
+              </h3>
               <div className="tests-list">
                 <table className="tests-table">
                   <thead>
@@ -180,7 +231,7 @@ const Billing = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {booking.tests.map(test => (
+                    {tests.map(test => (
                       <tr key={test.id}>
                         <td>{test.test_name}</td>
                         <td>{test.rate}</td>
@@ -192,7 +243,7 @@ const Billing = () => {
                   <tfoot>
                     <tr>
                       <td colSpan="3" style={{ textAlign: 'right' }}><strong>Total:</strong></td>
-                      <td><strong>₹{booking.total_amount.toFixed(2)}</strong></td>
+                      <td><strong>₹{total.toFixed(2)}</strong></td>
                     </tr>
                   </tfoot>
                 </table>
@@ -216,7 +267,7 @@ const Billing = () => {
                     <label>⚖️ Balance (₹)</label>
                     <input
                       type="text"
-                      value={(booking.total_amount - (parseFloat(paidAmount) || 0)).toFixed(2)}
+                      value={(total - (parseFloat(paidAmount) || 0)).toFixed(2)}
                       className="payment-input balance"
                       readOnly
                     />
@@ -243,13 +294,19 @@ const Billing = () => {
               <button
                 className="submit-btn"
                 onClick={handleSubmit}
-                disabled={loading}
+                disabled={loading || selectedBookingOption === 'all'}
               >
                 {loading ? 'Processing...' : '✅ Complete Payment'}
               </button>
-
+              {selectedBookingOption === 'all' && (
+                <p style={{ color: '#f59e0b', marginTop: '8px' }}>
+                  ⚠️ Payment can only be completed for a single booking. Please select a specific booking.
+                </p>
+              )}
               {success && <div className="billing-success">{success}</div>}
             </>
+          ) : (
+            <p>No tests found for the selected booking.</p>
           )}
         </section>
       )}

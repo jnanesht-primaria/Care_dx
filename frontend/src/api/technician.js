@@ -94,3 +94,5 @@ export const markNotificationRead = (id) =>
   axiosInstance.patch(`/api/technician/notifications/${id}/read`);
 export const getPatientPendingBooking = (patientId) =>
   axiosInstance.get(`/api/technician/patients/${patientId}/pending-booking`);
+export const getPatientBookings = (patientId) =>
+  axiosInstance.get(`/api/technician/patients/${patientId}/bookings`);

@@ -100,39 +100,72 @@ def search_patients():
 # ---------- Get pending booking for a patient ----------
 @technician_bp.route('/patients/<int:patient_id>/pending-booking', methods=['GET'])
 @role_required(['TECHNICIAN', 'ADMIN'])
-def get_pending_booking(patient_id):
+def get_patient_booking(patient_id):
     booking = Booking.query.filter_by(
         patient_id=patient_id,
-        assigned_to=request.user.id,
-        status='Pending'
+        assigned_to=request.user.id
     ).order_by(Booking.booking_date.desc()).first()
 
     if not booking:
-        return jsonify({'message': 'No pending booking found for this patient'}), 404
+        return jsonify({'message': 'No booking found for this patient'}), 404
 
-    # Get booking items with test details
     items = BookingItem.query.filter_by(booking_id=booking.id).all()
     tests = []
     for item in items:
         tests.append({
             'id': item.id,
             'test_name': item.test.test_name if item.test else 'Unknown',
-            'rate': float(item.rate),
-            'discount': float(item.discount),
-            'final_price': float(item.final_price)
+            'rate': float(item.rate) if item.rate is not None else 0,
+            'discount': float(item.discount) if item.discount is not None else 0,
+            'final_price': float(item.final_price) if item.final_price is not None else 0
         })
 
     return jsonify({
         'booking_id': booking.id,
-        'patient_id': booking.patient_id,
-        'total_amount': float(booking.total_amount),
-        'discount': float(booking.discount),
-        'paid_amount': float(booking.paid_amount or 0),
-        'balance': float(booking.balance or 0),
+        'total_amount': float(booking.total_amount) if booking.total_amount is not None else 0,
+        'discount': float(booking.discount) if booking.discount is not None else 0,
+        'paid_amount': float(booking.paid_amount) if booking.paid_amount is not None else 0,
+        'balance': float(booking.balance) if booking.balance is not None else 0,
         'payment_mode': booking.payment_mode,
         'status': booking.status,
         'tests': tests
     }), 200
+@technician_bp.route('/patients/<int:patient_id>/bookings', methods=['GET'])
+@role_required(['TECHNICIAN', 'ADMIN'])
+def get_patient_bookings(patient_id):
+    bookings = Booking.query.filter_by(
+        patient_id=patient_id,
+        assigned_to=request.user.id
+    ).order_by(Booking.booking_date.desc()).all()
+
+    if not bookings:
+        return jsonify({'bookings': []}), 200
+
+    result = []
+    for b in bookings:
+        items = BookingItem.query.filter_by(booking_id=b.id).all()
+        tests = []
+        for item in items:
+            tests.append({
+                'id': item.id,
+                'test_name': item.test.test_name if item.test else 'Unknown',
+                'rate': float(item.rate) if item.rate is not None else 0,
+                'discount': float(item.discount) if item.discount is not None else 0,
+                'final_price': float(item.final_price) if item.final_price is not None else 0
+            })
+        result.append({
+            'booking_id': b.id,
+            'booking_date': b.booking_date.isoformat() if b.booking_date else None,
+            'status': b.status,
+            'total_amount': float(b.total_amount) if b.total_amount is not None else 0,
+            'paid_amount': float(b.paid_amount) if b.paid_amount is not None else 0,
+            'discount': float(b.discount) if b.discount is not None else 0,
+            'balance': float(b.balance) if b.balance is not None else 0,
+            'payment_mode': b.payment_mode,
+            'tests': tests
+        })
+
+    return jsonify({'bookings': result}), 200
 # ---------- Get Tests (for booking) ----------
 @technician_bp.route('/tests', methods=['GET'])
 @role_required(['TECHNICIAN', 'ADMIN'])
