@@ -1,0 +1,44 @@
+/* PatientRegistration.css */
+.registration-form {
+  max-width: 700px;
+  background: #fff;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-row input,
+.form-row select {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.registration-form button[type="submit"] {
+  padding: 12px 24px;
+  background: #2ecc71;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-top: 8px;
+}
+
+.registration-form button[type="submit"]:hover {
+  background: #27ae60;
+}
+
+.registration-form button[type="submit"]:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

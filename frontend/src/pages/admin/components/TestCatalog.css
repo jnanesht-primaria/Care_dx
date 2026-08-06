@@ -1,0 +1,73 @@
+/* TestCatalog.css */
+/* Same styles as above; you can duplicate or use a shared file.
+   We'll include the same for consistency. */
+.admin-form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+  align-items: center;
+}
+.admin-form input,
+.admin-form select,
+.admin-form textarea {
+  padding: 8px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  flex: 1 1 180px;
+}
+.admin-form label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  flex: 0 0 auto;
+}
+.admin-form button {
+  padding: 8px 16px;
+  background: #3b82f6;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.admin-form button[type="button"] {
+  background: #94a3b8;
+}
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.admin-table th,
+.admin-table td {
+  padding: 12px 15px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+}
+.admin-table th {
+  background: #f1f5f9;
+  font-weight: 600;
+}
+.admin-table button {
+  margin-right: 8px;
+  padding: 4px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.admin-table button:first-of-type {
+  background: #eab308;
+  color: #000;
+}
+.admin-table button:last-of-type {
+  background: #ef4444;
+  color: #fff;
+}

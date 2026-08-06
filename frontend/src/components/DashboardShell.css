@@ -1,0 +1,57 @@
+.dashboard {
+  min-height: 100vh;
+  background: #10151c;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  color: #eef2f8;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 22px 32px;
+  border-bottom: 1px solid #232e3d;
+}
+
+.dashboard-header h1 {
+  margin: 0 0 4px;
+  font-size: 19px;
+}
+
+.dashboard-header p {
+  margin: 0;
+  color: #7c8797;
+  font-size: 13px;
+}
+
+.dashboard-header button {
+  background: #1c2531;
+  border: 1px solid #2a3444;
+  color: #eef2f8;
+  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.dashboard-header button:hover {
+  background: #232e3d;
+}
+
+.dashboard-body {
+  padding: 32px;
+}
+
+.dashboard-card {
+  background: #171f2b;
+  border: 1px solid #232e3d;
+  border-radius: 12px;
+  padding: 24px;
+  font-size: 14px;
+  color: #cdd5e0;
+  max-width: 480px;
+}
+
+.dashboard.admin .dashboard-header { border-color: #34406b; }
+.dashboard.technician .dashboard-header { border-color: #2c5a4f; }
+.dashboard.receptionist .dashboard-header { border-color: #5a4630; }

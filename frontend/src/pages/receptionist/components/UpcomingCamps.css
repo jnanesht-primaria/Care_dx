@@ -1,0 +1,22 @@
+/* UpcomingCamps.css */
+.upcoming-list {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.upcoming-list li {
+  background: #fff;
+  padding: 16px 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+  border-left: 4px solid #f39c12;
+}
+
+.upcoming-list li strong {
+  display: block;
+  font-size: 18px;
+  color: #2c3e50;
+}

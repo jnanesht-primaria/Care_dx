@@ -1,0 +1,48 @@
+/* Same as receptionist sidebar; can reuse or duplicate */
+.sidebar {
+  width: 240px;
+  height: 100vh;
+  background: #2c3e50;
+  color: #ecf0f1;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0;
+  left: 0;
+  padding-top: 20px;
+}
+
+.sidebar-brand {
+  font-size: 24px;
+  font-weight: bold;
+  text-align: center;
+  padding: 10px 0 20px;
+  border-bottom: 1px solid #34495e;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-link {
+  padding: 10px 20px;
+  color: #bdc3c7;
+  text-decoration: none;
+  transition: 0.2s;
+  border-left: 3px solid transparent;
+}
+
+.sidebar-link:hover {
+  background: #34495e;
+  color: #fff;
+}
+
+.sidebar-link.active {
+  background: #34495e;
+  color: #fff;
+  border-left-color: #3498db;
+}

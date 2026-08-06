@@ -1,0 +1,446 @@
+.billing-container {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.billing-header {
+  margin-bottom: 28px;
+}
+
+.billing-header h2 {
+  font-size: 28px;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+  font-weight: 700;
+}
+
+.billing-header p {
+  color: #64748b;
+  font-size: 15px;
+  margin: 0;
+}
+
+.section-label {
+  display: block;
+  font-weight: 600;
+  font-size: 16px;
+  color: #0f172a;
+  margin-bottom: 12px;
+}
+
+/* ---- Patient ---- */
+.patient-section {
+  background: #ffffff;
+  padding: 20px 24px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  margin-bottom: 24px;
+}
+
+.selected-patient {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: #f1f5f9;
+  border-radius: 10px;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.selected-patient .patient-meta {
+  color: #475569;
+  font-size: 14px;
+  margin-left: 10px;
+}
+
+.clear-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.clear-btn:hover {
+  background: #dc2626;
+}
+
+.search-container {
+  position: relative;
+}
+
+.search-input {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  background: #fafbfc;
+}
+.search-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+  background: white;
+}
+
+.search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0 0 10px 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  z-index: 100;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+.search-results li {
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.1s;
+}
+.search-results li:hover {
+  background: #f1f5f9;
+}
+
+.no-results {
+  padding: 10px 16px;
+  color: #94a3b8;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0 0 10px 10px;
+}
+
+.search-spinner {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+}
+
+/* ---- Tests ---- */
+.tests-section {
+  background: #ffffff;
+  padding: 20px 24px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  margin-bottom: 24px;
+}
+
+.tests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.test-checkbox {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.test-checkbox:hover {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+.test-checkbox input[type="checkbox"] {
+  margin-right: 12px;
+  accent-color: #3b82f6;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.test-name {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+  color: #1e293b;
+}
+.test-rate {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2563eb;
+  background: #eff6ff;
+  padding: 2px 10px;
+  border-radius: 20px;
+}
+
+.no-tests {
+  color: #94a3b8;
+  padding: 20px 0;
+  text-align: center;
+  font-size: 15px;
+}
+
+/* ---- Summary & Payment ---- */
+.summary-section {
+  background: #ffffff;
+  padding: 20px 24px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  margin-top: 8px;
+}
+
+.summary-section h3 {
+  margin: 0 0 16px 0;
+  color: #0f172a;
+  font-size: 20px;
+}
+
+.summary-table-wrapper {
+  overflow-x: auto;
+}
+
+.summary-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+.summary-table th {
+  text-align: left;
+  padding: 12px 12px;
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 2px solid #e2e8f0;
+}
+.summary-table td {
+  padding: 12px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+.summary-table tfoot td {
+  border-top: 2px solid #e2e8f0;
+  padding: 14px 12px;
+  font-weight: 600;
+}
+
+.discount-input {
+  width: 80px;
+  padding: 6px 8px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.discount-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.remove-btn {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: none;
+  border-radius: 50%;
+  width: 32px;
+  height: 32px;
+  cursor: pointer;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s;
+}
+.remove-btn:hover {
+  background: #fecaca;
+}
+
+/* Payment fields */
+.payment-fields {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 2px solid #e2e8f0;
+}
+
+.payment-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+.payment-group {
+  flex: 1;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+}
+
+.payment-group label {
+  font-weight: 500;
+  color: #1e293b;
+  margin-bottom: 4px;
+  font-size: 14px;
+}
+
+.payment-input {
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.payment-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+.payment-input.balance {
+  background: #f8fafc;
+  cursor: not-allowed;
+}
+
+.payment-select {
+  padding: 10px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 15px;
+  background: white;
+  outline: none;
+  appearance: auto;
+}
+.payment-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.submit-btn {
+  margin-top: 24px;
+  padding: 14px 40px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 18px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  width: 100%;
+}
+.submit-btn:hover:not(:disabled) {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.35);
+}
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.billing-error {
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: #fee2e2;
+  color: #b91c1c;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+.billing-success {
+  margin-top: 14px;
+  padding: 12px 16px;
+  background: #dcfce7;
+  color: #166534;
+  border-radius: 10px;
+  font-size: 14px;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .billing-container {
+    padding: 16px 12px;
+  }
+  .patient-section,
+  .tests-section,
+  .summary-section {
+    padding: 16px;
+  }
+  .tests-grid {
+    grid-template-columns: 1fr;
+  }
+  .summary-table {
+    font-size: 13px;
+  }
+  .summary-table th,
+  .summary-table td {
+    padding: 8px 6px;
+  }
+  .discount-input {
+    width: 60px;
+  }
+  .payment-row {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .submit-btn {
+    font-size: 16px;
+    padding: 14px 20px;
+  }
+}
+.booking-section {
+  background: #ffffff;
+  padding: 20px 24px;
+  border-radius: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  margin-top: 24px;
+}
+
+.booking-section h3 {
+  margin: 0 0 12px 0;
+  color: #0f172a;
+}
+
+.tests-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.tests-table th {
+  text-align: left;
+  padding: 10px 12px;
+  background: #f1f5f9;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.tests-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.tests-table tfoot td {
+  border-top: 2px solid #e2e8f0;
+  padding: 12px;
+  font-weight: 600;
+}

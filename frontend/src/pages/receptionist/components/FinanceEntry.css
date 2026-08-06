@@ -1,0 +1,55 @@
+/* FinanceEntry.css */
+.finance-form {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.finance-form input,
+.finance-form select {
+  padding: 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.finance-form button {
+  padding: 10px 24px;
+  background: #3498db;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  grid-column: span 2;
+  justify-self: start;
+}
+
+.finance-form button:hover {
+  background: #2980b9;
+}
+
+.finance-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+.finance-table th {
+  background: #f8f9fa;
+  padding: 10px 16px;
+  text-align: left;
+}
+
+.finance-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #f1f3f5;
+}

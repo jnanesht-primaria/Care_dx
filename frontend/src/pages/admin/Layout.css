@@ -1,0 +1,12 @@
+/* frontend/src/pages/admin/Layout.css */
+.admin-layout {
+  display: flex;
+  height: 100vh;
+}
+.admin-content {
+  flex: 1;
+  margin-left: 250px; /* same as sidebar width */
+  padding: 20px;
+  overflow-y: auto;
+  background: #f8fafc;
+}

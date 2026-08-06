@@ -1,0 +1,38 @@
+/* frontend/src/pages/admin/common/Sidebar.css */
+.sidebar {
+  width: 250px;
+  background: #1e293b;
+  color: #fff;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  left: 0;
+  top: 0;
+  padding-top: 20px;
+}
+.sidebar-brand {
+  font-size: 1.5rem;
+  font-weight: bold;
+  padding: 0 20px 30px;
+  border-bottom: 1px solid #334155;
+}
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+}
+.sidebar-link {
+  color: #cbd5e1;
+  text-decoration: none;
+  padding: 12px 20px;
+  transition: all 0.2s;
+}
+.sidebar-link:hover {
+  background: #334155;
+  color: #fff;
+}
+.sidebar-link.active {
+  background: #3b82f6;
+  color: #fff;
+}
