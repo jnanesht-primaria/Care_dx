@@ -2,9 +2,13 @@
 import React from 'react';
 import './StatCard.css';
 
-export default function StatCard({ label, value, icon, color, trend }) {
+export default function StatCard({ label, value, icon, color, trend, onClick }) {
   return (
-    <div className="tech-stat-card">
+    <div
+      className="tech-stat-card"
+      onClick={onClick}
+      style={{ cursor: onClick ? 'pointer' : 'default' }}
+    >
       <div className="tech-stat-icon" style={{ background: `${color}15`, color: color }}>
         {icon}
       </div>

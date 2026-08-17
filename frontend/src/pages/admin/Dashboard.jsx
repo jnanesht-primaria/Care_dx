@@ -1,5 +1,6 @@
 // frontend/src/pages/admin/Dashboard.jsx
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getAdminDashboard } from '../../api/admin';
 import './Dashboard.css';
 
@@ -14,6 +15,7 @@ const Dashboard = () => {
     upcoming_camps: 0,
   });
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     getAdminDashboard()
@@ -27,11 +29,28 @@ const Dashboard = () => {
       });
   }, []);
 
+  const handleLogout = () => {
+    // Confirm logout action (optional)
+    if (window.confirm('Are you sure you want to logout?')) {
+      // Clear authentication token (adjust key as per your implementation)
+      localStorage.removeItem('token'); // or sessionStorage.removeItem('token')
+      // Optionally call a logout API if needed
+      // await logoutApi();
+      // Redirect to login page
+      navigate('/login');
+    }
+  };
+
   if (loading) return <div className="loading">Loading dashboard...</div>;
 
   return (
     <div className="admin-dashboard">
-      <h1>Admin Dashboard</h1>
+      <div className="dashboard-header">
+        <h1>Admin Dashboard</h1>
+        <button className="logout-btn" onClick={handleLogout}>
+          Logout
+        </button>
+      </div>
       <div className="stats-grid">
         <div className="stat-card">
           <span className="stat-label">Total Patients</span>

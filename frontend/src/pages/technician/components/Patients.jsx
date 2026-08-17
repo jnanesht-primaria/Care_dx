@@ -13,18 +13,14 @@ const Patients = () => {
     maxAge: '',
   });
 
-  // Fetch patients based on search and filters
   const fetchPatients = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      // Build query string for search (backend already supports search)
       const query = searchTerm.trim();
       const response = await searchPatientsAsTechnician(query);
-      // response is already the array (from the API function)
       let filtered = response;
 
-      // Apply client-side filters (since backend may not support them)
       if (filters.gender !== 'all') {
         filtered = filtered.filter(p => p.gender === filters.gender);
       }
@@ -47,7 +43,6 @@ const Patients = () => {
   }, [searchTerm, filters]);
 
   useEffect(() => {
-    // Debounce search to avoid too many requests
     const timer = setTimeout(() => {
       fetchPatients();
     }, 300);
@@ -59,16 +54,19 @@ const Patients = () => {
     setFilters(prev => ({ ...prev, [name]: value }));
   };
 
-  const clearFilters = () => {
+  const handleRefresh = () => {
     setFilters({ gender: 'all', minAge: '', maxAge: '' });
     setSearchTerm('');
+    fetchPatients();
   };
 
   return (
     <div className="patients-container">
       <div className="patients-header">
-        <h2>Patient Management</h2>
-        <p>Search and manage patient records</p>
+        <div>
+          <h2>Patient Management</h2>
+          <p>Search and manage patient records</p>
+        </div>
       </div>
 
       {/* Search and Filter Bar */}
@@ -81,7 +79,9 @@ const Patients = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
             className="search-input"
           />
-          <button className="search-btn">🔍</button>
+          <button onClick={fetchPatients} className="search-btn">
+            Search
+          </button>
         </div>
 
         <div className="filter-group">
@@ -114,8 +114,12 @@ const Patients = () => {
             className="filter-age"
           />
 
-          <button onClick={clearFilters} className="clear-btn">
-            Clear Filters
+          <button
+            onClick={handleRefresh}
+            className="refresh-btn"
+            disabled={loading}
+          >
+            {loading ? 'Refreshing…' : 'Refresh'}
           </button>
         </div>
       </div>

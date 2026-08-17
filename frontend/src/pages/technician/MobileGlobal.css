@@ -1,0 +1,100 @@
+/* frontend/src/pages/technician/MobileGlobal.css */
+/* Global mobile-responsive rules for all technician tab pages */
+
+@media (max-width: 699px) {
+  /* ── Generic page containers ─────────────────────────────── */
+  .page-content,
+  .tech-content,
+  .dashboard-container {
+    padding: 12px !important;
+    max-width: 100% !important;
+  }
+
+  /* ── Forms: stack labels/inputs, full-width fields ──────────── */
+  form {
+    display: flex;
+    flex-direction: column;
+  }
+
+  form .form-row,
+  form .form-grid,
+  .form-group-row {
+    display: flex;
+    flex-direction: column !important;
+    gap: 10px;
+  }
+
+  input,
+  select,
+  textarea {
+    width: 100% !important;
+    font-size: 16px !important; /* prevents iOS Safari auto-zoom on focus */
+    box-sizing: border-box;
+  }
+
+  button,
+  .btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 15px;
+  }
+
+  /* If a form has multiple buttons side by side, let them wrap instead of squeezing */
+  .form-actions,
+  .btn-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .form-actions button,
+  .btn-group button {
+    width: auto;
+    flex: 1 1 45%;
+  }
+
+  /* ── Tables: horizontal scroll instead of squeeze/overflow ──── */
+  table {
+    display: block;
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+
+  /* Wrap any raw <table> not already inside a scroll container */
+  .table-responsive-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* ── Modals: full-screen instead of centered fixed-width box ── */
+  .modal,
+  .modal-content,
+  .modal-box {
+    width: 94vw !important;
+    max-width: 94vw !important;
+    max-height: 90vh;
+    overflow-y: auto;
+    margin: auto;
+  }
+
+  /* ── Cards / panels that used fixed widths on desktop ────────── */
+  .card,
+  .panel,
+  .section-box {
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  /* ── Any side-by-side desktop layout, force to stack ─────────── */
+  .two-column,
+  .split-layout,
+  .flex-row {
+    flex-direction: column !important;
+  }
+
+  /* ── Headings: reasonable mobile sizing ───────────────────────── */
+  h1 { font-size: 22px !important; }
+  h2 { font-size: 19px !important; }
+  h3 { font-size: 16px !important; }
+}

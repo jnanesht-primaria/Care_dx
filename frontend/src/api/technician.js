@@ -96,3 +96,32 @@ export const getPatientPendingBooking = (patientId) =>
   axiosInstance.get(`/api/technician/patients/${patientId}/pending-booking`);
 export const getPatientBookings = (patientId) =>
   axiosInstance.get(`/api/technician/patients/${patientId}/bookings`);
+export const getAllTests = getTests;   // ✅ reuses the existing correct function
+// ============================================================
+// Payment / Billing
+// ============================================================
+export function payBooking(bookingId, paidAmount, paymentMode) {
+  return axiosInstance.patch(`/api/technician/bookings/${bookingId}/pay`, {
+    paid_amount: paidAmount,
+    payment_mode: paymentMode,
+  });
+}
+// ============================================================
+// Patient Bookings (All, without assigned filter)
+// ============================================================
+export const getAllPatientBookings = (patientId) =>
+  axiosInstance.get(`/api/technician/patients/${patientId}/all-bookings`);
+export const updateBookingTests = (bookingId, data) =>
+  axiosInstance.put(`/api/technician/bookings/${bookingId}/tests`, data);
+export const getDashboardPatientsToday = (date) =>
+  axiosInstance.get('/api/technician/dashboard/patients-today', { params: { date } });
+export const getDashboardTestsToday = (date) =>
+  axiosInstance.get('/api/technician/dashboard/tests-today', { params: { date } });
+export const getDashboardCompletedToday = (date) =>
+  axiosInstance.get('/api/technician/dashboard/completed-today', { params: { date } });
+export const getDashboardPendingToday = (date) =>
+  axiosInstance.get('/api/technician/dashboard/pending-today', { params: { date } });
+export const getDashboardInvoicesToday = (date) =>
+  axiosInstance.get('/api/technician/dashboard/invoices-today', { params: { date } });
+export const getDashboardRevenueToday = (date) =>
+  axiosInstance.get('/api/technician/dashboard/revenue-today', { params: { date } });

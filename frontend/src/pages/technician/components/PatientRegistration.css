@@ -1,0 +1,322 @@
+/* PatientRegistration.css – Official Medical Form Style */
+
+.registration-container {
+  padding: 32px 40px;
+  background: #f1f5f9;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* ─── Header (Official) ─────────────────────────────────────── */
+.registration-header {
+  width: 100%;
+  max-width: 1000px;
+  background: linear-gradient(135deg, #0f766e 0%, #0b5e56 100%);
+  padding: 24px 32px;
+  border-radius: 16px 16px 0 0;
+  margin-bottom: 0;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.registration-header .header-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.registration-header h2 {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.registration-header p {
+  font-size: 15px;
+  opacity: 0.9;
+  margin: 4px 0 0 0;
+  font-weight: 400;
+}
+
+.registration-header .header-badge {
+  background: rgba(255, 255, 255, 0.15);
+  padding: 6px 18px;
+  border-radius: 30px;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* ─── Form Container ────────────────────────────────────────── */
+.registration-form {
+  width: 100%;
+  max-width: 1000px;
+  background: #ffffff;
+  border-radius: 0 0 16px 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  padding: 32px 40px 40px;
+  margin-bottom: 40px;
+}
+
+/* ─── Error Banner ──────────────────────────────────────────── */
+.registration-error {
+  width: 100%;
+  max-width: 1000px;
+  background: #fef2f2;
+  color: #b91c1c;
+  padding: 14px 24px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: 500;
+  border-left: 5px solid #b91c1c;
+}
+
+/* ─── Form Sections ─────────────────────────────────────────── */
+.form-section {
+  margin-bottom: 32px;
+  padding: 20px 24px 24px;
+  background: #fafcff;
+  border-radius: 12px;
+  border: 1px solid #e9edf2;
+  transition: box-shadow 0.2s;
+}
+
+.form-section:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+}
+
+.form-section:last-of-type {
+  margin-bottom: 0;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f766e;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin: 0 0 18px 0;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-title::before {
+  content: '';
+  display: inline-block;
+  width: 4px;
+  height: 20px;
+  background: #0f766e;
+  border-radius: 4px;
+}
+
+/* ─── Form Rows & Groups ────────────────────────────────────── */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px 32px;
+  margin-bottom: 18px;
+}
+
+.form-row:last-child {
+  margin-bottom: 0;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-group label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Required asterisk */
+.form-group label[for]::after {
+  content: '';
+  /* we'll handle required via JSX required attribute, but we can add a star manually in JSX if needed */
+}
+
+/* Alternatively, we can add a red star to required fields via CSS if we add a class */
+.form-group.required label::after {
+  content: ' *';
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.form-group input,
+.form-group select {
+  padding: 12px 16px;
+  border: 1px solid #d1d9e6;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #0f172a;
+  background: #ffffff;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #0f766e;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.12);
+}
+
+.form-group input::placeholder {
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+.form-group input[type="number"] {
+  -moz-appearance: textfield;
+}
+.form-group input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ─── Buttons ────────────────────────────────────────────────── */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  margin-top: 32px;
+  padding-top: 24px;
+  border-top: 2px solid #f1f5f9;
+}
+
+.reset-btn {
+  padding: 12px 32px;
+  background: #f1f5f9;
+  color: #334155;
+  border: 1px solid #d1d9e6;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.reset-btn:hover:not(:disabled) {
+  background: #e2e8f0;
+  border-color: #b0b9c8;
+}
+
+.submit-btn {
+  padding: 12px 36px;
+  background: #0f766e;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  letter-spacing: 0.3px;
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: #0b5e56;
+  transform: translateY(-1px);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.reset-btn:disabled,
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ─── Responsive ────────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .registration-container {
+    padding: 16px;
+  }
+
+  .registration-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 20px 24px;
+    border-radius: 12px 12px 0 0;
+  }
+
+  .registration-header h2 {
+    font-size: 22px;
+  }
+
+  .registration-header .header-badge {
+    align-self: flex-start;
+  }
+
+  .registration-form {
+    padding: 20px 16px 28px;
+    border-radius: 0 0 12px 12px;
+  }
+
+  .form-section {
+    padding: 16px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-bottom: 14px;
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+    gap: 10px;
+  }
+
+  .reset-btn,
+  .submit-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .registration-error {
+    padding: 12px 16px;
+  }
+}
+
+/* ─── Extra small screens ────────────────────────────────────── */
+@media (max-width: 480px) {
+  .registration-header h2 {
+    font-size: 18px;
+  }
+
+  .registration-header p {
+    font-size: 13px;
+  }
+
+  .section-title {
+    font-size: 14px;
+  }
+
+  .form-group input,
+  .form-group select {
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+}

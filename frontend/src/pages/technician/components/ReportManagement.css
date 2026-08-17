@@ -1,0 +1,402 @@
+.report-management-container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.report-management-container h2 {
+  font-size: 28px;
+  color: #0f172a;
+  margin-bottom: 24px;
+}
+
+/* ── Patient Search ────────────────────────────────────────────── */
+.patient-search-section {
+  margin-bottom: 28px;
+}
+.search-label {
+  display: block;
+  font-weight: 600;
+  font-size: 16px;
+  color: #0f172a;
+  margin-bottom: 8px;
+}
+.search-wrapper {
+  position: relative;
+}
+.patient-search-input {
+  width: 100%;
+  max-width: 500px;
+  padding: 10px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.patient-search-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1);
+}
+.patient-search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-width: 500px;
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 0 0 10px 10px;
+  max-height: 200px;
+  overflow-y: auto;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  z-index: 100;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+.patient-search-results li {
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f5f9;
+}
+.patient-search-results li:hover {
+  background: #f1f5f9;
+}
+
+/* ── Selected Patient ──────────────────────────────────────────── */
+.selected-patient-info {
+  margin-bottom: 20px;
+}
+.selected-patient-info h3 {
+  font-size: 20px;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.clear-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  cursor: pointer;
+  font-size: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.clear-btn:hover {
+  background: #dc2626;
+}
+
+/* ── Tabs ───────────────────────────────────────────────────────── */
+.tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.tab-btn {
+  padding: 8px 20px;
+  border: 1px solid #e2e8f0;
+  background: #f1f5f9;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  color: #475569;
+  transition: all 0.2s;
+}
+.tab-btn:hover {
+  background: #e2e8f0;
+}
+.tab-btn.active {
+  background: #3b82f6;
+  color: #fff;
+  border-color: #3b82f6;
+}
+
+/* ── Reports Table ─────────────────────────────────────────────── */
+.report-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.report-table th {
+  background: #f1f5f9;
+  color: #0f172a;
+  font-weight: 600;
+  text-align: left;
+  padding: 12px 16px;
+}
+.report-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.report-table tr:last-child td {
+  border-bottom: none;
+}
+.report-table tr:hover td {
+  background: #fafbfc;
+}
+
+/* ── Status Badges ──────────────────────────────────────────────── */
+.status-badge {
+  display: inline-block;
+  padding: 2px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+.status-draft { background: #fef3c7; color: #92400e; }
+.status-pending { background: #dbeafe; color: #1e40af; }
+.status-approved { background: #d1fae5; color: #065f46; }
+.status-rejected { background: #fee2e2; color: #991b1b; }
+.status-uploaded { background: #e0e7ff; color: #3730a3; }
+.status-unknown { background: #e2e8f0; color: #475569; }
+/* extra statuses */
+.status-sample-collected { background: #c7d2fe; color: #3730a3; }
+.status-processing { background: #fde68a; color: #92400e; }
+.status-completed { background: #a7f3d0; color: #065f46; }
+
+/* ── Action Buttons ────────────────────────────────────────────── */
+.action-btn {
+  padding: 5px 14px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  margin-right: 6px;
+  transition: background 0.15s;
+}
+.view-btn {
+  background: #3b82f6;
+  color: white;
+}
+.view-btn:hover {
+  background: #2563eb;
+}
+.download-btn {
+  background: #10b981;
+  color: white;
+}
+.download-btn:hover {
+  background: #059669;
+}
+
+.loading, .no-reports {
+  padding: 20px;
+  color: #64748b;
+}
+
+/* ── Booking Cards ─────────────────────────────────────────────── */
+.bookings-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.booking-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px 20px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+}
+.booking-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.booking-header h4 {
+  margin: 0;
+  font-size: 18px;
+  color: #0f172a;
+}
+.booking-date {
+  color: #64748b;
+  font-size: 14px;
+  margin-left: auto;
+}
+.booking-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 8px 16px;
+  background: #f8fafc;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+}
+.booking-details p {
+  margin: 0;
+  font-size: 15px;
+  color: #1e293b;
+}
+.booking-details strong {
+  color: #0f172a;
+}
+.booking-tests h5 {
+  margin: 0 0 6px 0;
+  font-size: 15px;
+  color: #334155;
+}
+.booking-tests ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.booking-tests li {
+  padding: 4px 0;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.booking-tests li:last-child {
+  border-bottom: none;
+}
+.booking-tests .report-status {
+  color: #3b82f6;
+  font-size: 0.85em;
+  font-weight: 500;
+}
+
+/* ── Responsive ────────────────────────────────────────────────── */
+@media (max-width: 600px) {
+  .booking-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .booking-date {
+    margin-left: 0;
+  }
+  .booking-details {
+    grid-template-columns: 1fr 1fr;
+  }
+  .tabs {
+    flex-wrap: wrap;
+  }
+}
+.report-values {
+  display: block;
+  font-size: 12px;
+  color: #3b82f6;
+  margin-top: 2px;
+}
+.booking-tests li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 6px 0;
+}
+.booking-tests li span {
+  display: block;
+}
+.refresh-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 4px 12px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: 8px;
+}
+.refresh-btn:hover {
+  background: #2563eb;
+}
+.debug-msg {
+  font-size: 13px;
+  color: #475569;
+  margin-top: 6px;
+}
+/* ─── Recent Patients ────────────────────────────────────────── */
+.recent-patients {
+  margin-top: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.recent-patients .recent-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.recent-patients .recent-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e2e8f0;
+  margin-left: 8px;
+}
+
+.recent-patients .recent-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recent-patients .recent-list li {
+  padding: 8px 12px;
+  margin-bottom: 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+  font-size: 14px;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recent-patients .recent-list li:hover {
+  background: #e2e8f0;
+  transform: translateX(4px);
+}
+
+.recent-patients .recent-list li:active {
+  background: #cbd5e1;
+  transform: scale(0.98);
+}
+
+.recent-patients .recent-list li::before {
+  content: '👤';
+  font-size: 16px;
+  opacity: 0.7;
+}
+
+/* scrollbar styling (optional) */
+.recent-patients::-webkit-scrollbar {
+  width: 6px;
+}
+.recent-patients::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+.recent-patients::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+.recent-patients::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}

@@ -1,10 +1,35 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { 
-  searchPatientsAsTechnician, 
-  getPatientBookings,
-  saveReport 
+import React, { useState, useEffect } from 'react';
+import {
+  searchPatientsAsTechnician,
+  getAllPatientBookings,
+  listReports,
+  saveReport,
 } from '../../../api/technician';
 import './Reporting.css';
+
+const signatureSrc = `${window.location.origin}/signature.jpeg`;
+
+// ─── Helper: load/save recent patients ──────────────────────────
+const RECENT_KEY = 'recentPatients_technician';
+const MAX_RECENT = 10;
+
+const loadRecentPatients = () => {
+  try {
+    const data = localStorage.getItem(RECENT_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveRecentPatients = (list) => {
+  try {
+    localStorage.setItem(RECENT_KEY, JSON.stringify(list));
+  } catch {}
+};
+
+// ─── Dedupe helper ──────────────────────────────────────────────
+const dedupeArray = (arr) => Array.from(new Set(arr));
 
 const Reporting = () => {
   // ---- Patient search ----
@@ -12,6 +37,9 @@ const Reporting = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [selectedPatient, setSelectedPatient] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
+
+  // ---- Recent patients ----
+  const [recentPatients, setRecentPatients] = useState(loadRecentPatients);
 
   // ---- Bookings ----
   const [bookings, setBookings] = useState([]);
@@ -23,8 +51,40 @@ const Reporting = () => {
   // ---- Results ----
   const [results, setResults] = useState({});
   const [savingAll, setSavingAll] = useState(false);
-  const [isPrinting, setIsPrinting] = useState(false);
-  const printRef = useRef();
+
+  // ---- Reports map (booking_item_id -> report object) ----
+  const [reportsMap, setReportsMap] = useState({});
+
+  // ---- Editing state (test.id -> boolean) ----
+  const [editingState, setEditingState] = useState({});
+
+  // ---- Helper: parse reference range ----
+  const parseReferenceRange = (ref) => {
+    if (!ref || typeof ref !== 'string') return null;
+    const s = ref.trim();
+    let match = s.match(/\b([\d.]+)\s*-\s*([\d.]+)\b/);
+    if (match) {
+      return { min: parseFloat(match[1]), max: parseFloat(match[2]) };
+    }
+    match = s.match(/^\s*([<>])\s*([\d.]+)\s*$/);
+    if (match) {
+      const val = parseFloat(match[2]);
+      if (match[1] === '>') return { min: val, max: Infinity };
+      if (match[1] === '<') return { min: -Infinity, max: val };
+    }
+    return null;
+  };
+
+  const getHighlightColor = (value, ref) => {
+    if (value === undefined || value === null || value === '') return '';
+    const num = parseFloat(value);
+    if (isNaN(num)) return '';
+    const range = parseReferenceRange(ref);
+    if (!range) return '';
+    if (num > range.max) return 'red';
+    if (num < range.min) return 'blue';
+    return '';
+  };
 
   // ---- Debounced patient search ----
   useEffect(() => {
@@ -35,7 +95,7 @@ const Reporting = () => {
     setIsSearching(true);
     const timer = setTimeout(() => {
       searchPatientsAsTechnician(searchQuery)
-        .then(results => {
+        .then((results) => {
           setSearchResults(Array.isArray(results) ? results : []);
           setIsSearching(false);
         })
@@ -44,7 +104,26 @@ const Reporting = () => {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  // ---- Select patient → fetch all bookings ----
+  // ---- Fetch existing reports for a patient ----
+  const fetchReportsForPatient = async (patientId) => {
+    try {
+      const res = await listReports({ patient_id: patientId });
+      const reports = res.data || [];
+      const map = {};
+      reports.forEach((r) => {
+        if (r.booking_item_id) {
+          map[r.booking_item_id] = r;
+        }
+      });
+      setReportsMap(map);
+      return map;
+    } catch (err) {
+      console.error('Failed to fetch reports:', err);
+      return {};
+    }
+  };
+
+  // ---- Select patient → fetch bookings and reports ----
   const handlePatientSelect = async (patient) => {
     setSelectedPatient(patient);
     setSearchQuery('');
@@ -54,25 +133,48 @@ const Reporting = () => {
     setBookings([]);
     setSelectedBookingOption('');
     setResults({});
-    setIsPrinting(false);
+    setEditingState({});
     setLoading(true);
 
+    // Add to recent patients
+    setRecentPatients((prev) => {
+      const filtered = prev.filter((p) => p.id !== patient.id);
+      const updated = [patient, ...filtered].slice(0, MAX_RECENT);
+      saveRecentPatients(updated);
+      return updated;
+    });
+
     try {
-      const res = await getPatientBookings(patient.id);
-      const data = res.data;
+      const [bookingsRes, reportsMap] = await Promise.all([
+        getAllPatientBookings(patient.id),
+        fetchReportsForPatient(patient.id),
+      ]);
+
+      const data = bookingsRes.data;
       if (data.bookings && data.bookings.length > 0) {
         setBookings(data.bookings);
         setSelectedBookingOption('all');
+
         const init = {};
-        data.bookings.forEach(b => {
-          b.tests.forEach(t => {
+        const editState = {};
+        data.bookings.forEach((b) => {
+          b.tests.forEach((t) => {
+            const report = reportsMap[t.id];
             init[t.id] = {};
             const fields = getTestFields(t.test_name);
-            fields.forEach(f => { init[t.id][f.key] = ''; });
-            init[t.id].notes = '';
+            fields.forEach((f) => {
+              if (report && report.result_data && report.result_data[f.key] !== undefined) {
+                init[t.id][f.key] = report.result_data[f.key] || '';
+              } else {
+                init[t.id][f.key] = '';
+              }
+            });
+            init[t.id].notes = report?.result_data?.notes || '';
+            editState[t.id] = !report;
           });
         });
         setResults(init);
+        setEditingState(editState);
       } else {
         setError('No bookings found for this patient.');
       }
@@ -89,17 +191,53 @@ const Reporting = () => {
     setBookings([]);
     setSelectedBookingOption('');
     setResults({});
+    setReportsMap({});
+    setEditingState({});
     setError('');
     setSuccess('');
-    setIsPrinting(false);
   };
 
   // ---- Handle result changes ----
   const handleResultChange = (testId, field, value) => {
-    setResults(prev => ({
+    setResults((prev) => ({
       ...prev,
-      [testId]: { ...prev[testId], [field]: value }
+      [testId]: { ...prev[testId], [field]: value },
     }));
+  };
+
+  // ---- Toggle edit mode ----
+  const toggleEdit = (testId) => {
+    setEditingState((prev) => ({
+      ...prev,
+      [testId]: !prev[testId],
+    }));
+  };
+
+  // ---- Save a single report ----
+  const saveSingleReport = async (test, status) => {
+    try {
+      const reportData = {
+        booking_item_id: test.id,
+        result_data: results[test.id] || {},
+        status: status,
+        report_date: new Date().toISOString().slice(0, 10),
+      };
+      const res = await saveReport(reportData);
+      const newReport = res.data || { id: res.report_id, ...reportData };
+      setReportsMap((prev) => ({
+        ...prev,
+        [test.id]: newReport,
+      }));
+      setEditingState((prev) => ({
+        ...prev,
+        [test.id]: false,
+      }));
+      setSuccess(`✅ ${test.test_name} saved as ${status}.`);
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      setError(`Failed to save ${test.test_name}.`);
+      setTimeout(() => setError(''), 3000);
+    }
   };
 
   // ---- Get all selected tests ----
@@ -107,10 +245,12 @@ const Reporting = () => {
     if (!selectedBookingOption || bookings.length === 0) return [];
     if (selectedBookingOption === 'all') {
       let allTests = [];
-      bookings.forEach(b => allTests = allTests.concat(b.tests));
+      bookings.forEach((b) => (allTests = allTests.concat(b.tests)));
       return allTests;
     } else {
-      const booking = bookings.find(b => b.booking_id === parseInt(selectedBookingOption));
+      const booking = bookings.find(
+        (b) => b.booking_id === parseInt(selectedBookingOption)
+      );
       return booking ? booking.tests : [];
     }
   };
@@ -127,13 +267,7 @@ const Reporting = () => {
     setSuccess('');
     try {
       for (const test of tests) {
-        const reportData = {
-          booking_item_id: test.id,
-          result_data: results[test.id] || {},
-          status: 'Draft',
-          report_date: new Date().toISOString().slice(0, 10),
-        };
-        await saveReport(reportData);
+        await saveSingleReport(test, 'Draft');
       }
       setSuccess('All tests saved as Draft.');
       setTimeout(() => setSuccess(''), 3000);
@@ -145,55 +279,26 @@ const Reporting = () => {
     }
   };
 
-  // ---- Submit all for Approval ----
-  const handleSubmitAll = async () => {
-    const tests = getSelectedTests();
-    if (!tests.length) {
-      alert('No tests to submit.');
-      return;
-    }
-    setSavingAll(true);
-    setError('');
-    setSuccess('');
-    try {
-      for (const test of tests) {
-        const reportData = {
-          booking_item_id: test.id,
-          result_data: results[test.id] || {},
-          status: 'Pending',
-          report_date: new Date().toISOString().slice(0, 10),
-        };
-        await saveReport(reportData);
-      }
-      setSuccess('All tests submitted for approval.');
-      setTimeout(() => setSuccess(''), 3000);
-    } catch (err) {
-      setError('Failed to submit all reports.');
-      setTimeout(() => setError(''), 3000);
-    } finally {
-      setSavingAll(false);
-    }
+  // ---- Print a single test report ----
+  const handlePrintSingle = (test) => {
+    if (!selectedPatient) return;
+    const html = buildPrintHtml([test], true);
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+    const iframeDoc = iframe.contentWindow.document;
+    iframeDoc.open();
+    iframeDoc.write(html);
+    iframeDoc.close();
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+    iframe.contentWindow.onafterprint = () => document.body.removeChild(iframe);
   };
 
-  // ---- Print all tests (each on its own page) ----
-  const handlePrintAll = () => {
-    const tests = getSelectedTests();
-    if (!tests.length) {
-      alert('No tests to print.');
-      return;
-    }
-    setIsPrinting(true);
-    // Wait for the print view to render, then trigger print
-    setTimeout(() => {
-      window.print();
-    }, 400);
-    // Reset printing flag after print dialog closes (or after a delay)
-    setTimeout(() => {
-      setIsPrinting(false);
-    }, 5000);
-  };
-
-  // ---- Helper: test field templates (all tests) ----
+  // ---- Helper: test field templates ----
   const getTestFields = (testName) => {
     const templates = {
       'Basic Diabetic Profile': [
@@ -204,9 +309,8 @@ const Reporting = () => {
         { key: 'urine_sugar', label: 'Urine Sugar', unit: 'mg/dL', ref: '0.6-1.4' },
         { key: 'urine_proteins', label: 'Urine Proteins', unit: 'NIL', ref: 'NIL' },
       ],
-      'Blood Report': [
-        { key: 'crp', label: 'C.R.P', unit: 'mg/dL', ref: '0 - 6.0 Mg/L' },
-      ],
+      'Blood Report': [{ key: 'crp', label: 'C.R.P', unit: 'mg/dL', ref: '0 - 6.0 Mg/L' }],
+      CRP: [{ key: 'crp', label: 'C.R.P', unit: 'mg/dL', ref: '0 - 6.0 Mg/L' }],
       'Complete Blood Counts': [
         { key: 'total_wbc', label: 'TOTAL WBC COUNT', unit: 'cells/Cum', ref: '4000 - 11000' },
         { key: 'lymphocytes', label: 'LYMPHOCYTES %', unit: '%', ref: '20 - 40' },
@@ -225,26 +329,24 @@ const Reporting = () => {
         { key: 'pct', label: 'PLATELET CRIT', unit: '%', ref: '0.10 - 0.28' },
         { key: 'lpcr', label: 'LARGE PLATELET CONCENTRATION RATIO', unit: '', ref: '' },
       ],
-      'Dengue': [
+      Dengue: [
         { key: 'igg', label: 'IgG', unit: '', ref: '' },
         { key: 'igm', label: 'IgM', unit: '', ref: '' },
         { key: 'ns1', label: 'NS1 Ag', unit: '', ref: '' },
         { key: 'mp', label: 'MP', unit: '', ref: '' },
       ],
-      'Electrolytes': [
+      Electrolytes: [
         { key: 'sodium', label: 'SERUM SODIUM', unit: 'mmol/L', ref: '135 - 145' },
         { key: 'potassium', label: 'SERUM POTASSIUM', unit: 'mmol/L', ref: '3.8 - 5.2' },
         { key: 'calcium', label: 'SERUM CALCIUM', unit: 'mg/dL', ref: '8.0 - 10.2' },
         { key: 'chloride', label: 'SERUM CHLORIDE', unit: 'mmol/L', ref: '98 - 108' },
       ],
-      'HbA1c': [
+      HbA1c: [
         { key: 'hba1c', label: 'GLYCOSYLATED HEMOGLOBIN (HbA1c)', unit: '%', ref: '4.0-6.0' },
         { key: 'avg_glucose', label: 'AVERAGE BLOOD GLUCOSE', unit: 'mg/dL', ref: '90-120' },
       ],
-      'Hemoglobin': [
-        { key: 'hemoglobin', label: 'Hemoglobin', unit: 'g/dL', ref: '13-17' },
-      ],
-      'Kidney': [
+      Hemoglobin: [{ key: 'hemoglobin', label: 'Hemoglobin', unit: 'g/dL', ref: '13-17' }],
+      Kidney: [
         { key: 'serum_creatinine', label: 'SERUM CREATININE', unit: 'mg/dL', ref: '0.6 - 1.4' },
         { key: 'blood_urea', label: 'BLOOD UREA', unit: 'mg/dL', ref: '10 - 40' },
         { key: 'bun', label: 'BLOOD UREA NITROGEN', unit: 'mg/dL', ref: '6.5 - 18.0' },
@@ -280,7 +382,7 @@ const Reporting = () => {
         { key: 'sgot', label: 'SGOT', unit: 'U/L', ref: '15.00-40.00' },
         { key: 'sgpt', label: 'SGPT', unit: 'U/L', ref: '10.00-49.00' },
       ],
-      'Malaria': [
+      Malaria: [
         { key: 'igg', label: 'IgG', unit: '', ref: '' },
         { key: 'pf', label: 'PLASMODIUM FALCIPARUM "PF"', unit: '', ref: '' },
         { key: 'pv', label: 'PLASMODIUM VIVAX "PV"', unit: '', ref: '' },
@@ -301,7 +403,7 @@ const Reporting = () => {
         { key: 'globulin', label: 'GLOBULIN', unit: 'mg/dL', ref: '2.3-3.5' },
         { key: 'ag_ratio', label: 'ALBUMIN/GLOBULIN RATIO', unit: 'mg/dL', ref: '1.2-2.2' },
       ],
-      'Thyroid': [
+      Thyroid: [
         { key: 't3', label: 'TRIIODOTHYRONINE TOTAL (T3)', unit: 'np/ml', ref: '0.61-1.81' },
         { key: 't4', label: 'THYROXINE-TOTAL (T4)', unit: 'ug/dL', ref: '5.0 - 14.5' },
         { key: 'tsh', label: 'THYROID STIMULATING HORMONE (TSH)', unit: 'uIU/ml', ref: '0.35 - 5.1' },
@@ -325,9 +427,7 @@ const Reporting = () => {
         { key: 'paratyphi_ah', label: 'SALMONELLA PARATYPHI "AH"', unit: '', ref: '1:20 DILL' },
         { key: 'paratyphi_bh', label: 'SALMONELLA PARATYPHI "BH"', unit: '', ref: '1:20 DILL' },
       ],
-      'AEC': [
-        { key: 'aec', label: 'AEC', unit: '', ref: '0-440' },
-      ],
+      AEC: [{ key: 'aec', label: 'AEC', unit: '', ref: '0-440' }],
       'Viral Markers': [
         { key: 'hiv', label: 'HIV', unit: '', ref: 'Negative' },
         { key: 'hbsag', label: 'HBSAG', unit: '', ref: 'Negative' },
@@ -341,69 +441,187 @@ const Reporting = () => {
     return templates[testName] || [{ key: 'result', label: 'Result', unit: '', ref: '' }];
   };
 
-  // ---- Print view component (each test on its own page) ----
-  const PrintReport = () => {
-    const tests = getSelectedTests();
-    return (
-      <div className="print-container" ref={printRef}>
-        {selectedPatient && tests.map((test, index) => {
-          const fields = getTestFields(test.test_name);
-          return (
-            <div key={test.id} className="print-page">
-              <div className="print-header">
-                <div className="print-logo">🏥 CareDx</div>
-                <div className="print-title">Lab Report</div>
-              </div>
-              <div className="print-patient-info">
-                <p><strong>Patient:</strong> {selectedPatient.first_name} {selectedPatient.last_name}</p>
-                <p><strong>Age / Gender:</strong> {selectedPatient.age} / {selectedPatient.gender}</p>
-                <p><strong>Contact:</strong> {selectedPatient.mobile}</p>
-                <p><strong>City:</strong> {selectedPatient.city || 'N/A'}</p>
-                <p><strong>Date:</strong> {new Date().toLocaleDateString()}</p>
-              </div>
-              <div className="print-test-section">
-                <h4>{test.test_name}</h4>
-                <table className="print-results-table">
-                  <thead>
-                    <tr>
-                      <th>Investigation</th>
-                      <th>Result</th>
-                      <th>Units</th>
-                      <th>Reference Range</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {fields.map(field => (
-                      <tr key={field.key}>
-                        <td>{field.label}</td>
-                        <td>{results[test.id]?.[field.key] || ''}</td>
-                        <td>{field.unit}</td>
-                        <td>{field.ref}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-                <div className="print-notes">
-                  <strong>Notes:</strong> {results[test.id]?.notes || ''}
-                </div>
-              </div>
-              <div className="print-footer">
-                <div className="signature-area">
-                  <p><strong>Signature:</strong> Dr. Kishore Babu M</p>
-                  <p>MSC. PHD (Biotechnology)</p>
-                </div>
-              </div>
-              {/* Page break after each test except the last */}
-              {index < tests.length - 1 && <div className="page-break" />}
+  // ---- Escape helper ----
+  const escapeHtml = (val) =>
+    String(val ?? '').replace(/[&<>"']/g, (c) => {
+      const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
+      return map[c];
+    });
+
+  // ---- Build print HTML ----
+  const buildPrintHtml = (tests, showHeader = true) => {
+    const headerSrc = `${window.location.origin}/header.png`;
+    const signatureSrc = `${window.location.origin}/signature.jpeg`;
+
+    const pages = tests
+      .map((test) => {
+        const fields = getTestFields(test.test_name);
+        const isMalariaOrDengue = test.test_name === 'Malaria' || test.test_name === 'Dengue';
+        const rows = fields
+          .map((f) => {
+            const value = results[test.id]?.[f.key] || '';
+            const color = getHighlightColor(value, f.ref);
+            const styleAttr = color ? ` style="color: ${color}; font-weight: bold;"` : '';
+            if (isMalariaOrDengue) {
+              return `
+              <tr>
+                <td>${escapeHtml(f.label)}</td>
+                <td${styleAttr}>${escapeHtml(value)}</td>
+              </tr>
+            `;
+            } else {
+              return `
+              <tr>
+                <td>${escapeHtml(f.label)}</td>
+                <td${styleAttr}>${escapeHtml(value)}</td>
+                <td>${escapeHtml(f.unit)}</td>
+                <td>${escapeHtml(f.ref)}</td>
+              </tr>
+            `;
+            }
+          })
+          .join('');
+
+        let headerRow;
+        if (isMalariaOrDengue) {
+          headerRow = `<tr><th>Investigation</th><th>Result</th></tr>`;
+        } else {
+          headerRow = `<tr><th>Investigation</th><th>Result</th><th>Units</th><th>Reference Range</th></tr>`;
+        }
+
+        const headerHtml = `
+          <div class="print-header">
+            ${showHeader ? `<img src="${headerSrc}" alt="CareDx Lab Report Header" />` : ''}
+          </div>
+        `;
+
+        return `
+          <section class="print-page">
+            ${headerHtml}
+            <div class="print-patient-info">
+              <p><strong>Patient:</strong> ${escapeHtml(selectedPatient.first_name)} ${escapeHtml(selectedPatient.last_name)}</p>
+              <p><strong>Age / Gender:</strong> ${escapeHtml(selectedPatient.age)} / ${escapeHtml(selectedPatient.gender)}</p>
+              <p><strong>Contact:</strong> ${escapeHtml(selectedPatient.mobile)}</p>
+              <p><strong>City:</strong> ${escapeHtml(selectedPatient.city || 'N/A')}</p>
+              <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
             </div>
-          );
-        })}
-        {/* Print action button (only visible in print preview) */}
-        <div className="print-actions">
-          <button onClick={() => window.print()}>🖨️ Print / PDF</button>
-        </div>
-      </div>
-    );
+            <div class="print-test-section">
+              <h4>${escapeHtml(test.test_name)}</h4>
+              <table class="print-results-table">
+                <thead>${headerRow}</thead>
+                <tbody>${rows}</tbody>
+              </table>
+            </div>
+            <div class="print-footer">
+              <div class="signature-area">
+                <img src="${signatureSrc}" alt="Signature" style="max-width: 200px; height: auto; display: block; margin-left: auto; margin-bottom: 4px;" />
+                <p><strong>Signature:</strong> Dr. Kishore Babu M</p>
+                <p>MSC. PHD (Biotechnology)</p>
+              </div>
+            </div>
+          </section>
+        `;
+      })
+      .join('');
+
+    return `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Lab Report - ${escapeHtml(selectedPatient.first_name)} ${escapeHtml(selectedPatient.last_name)}</title>
+<style>
+  @page { size: A4 portrait; margin: 15mm 15mm 20mm 15mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Roboto, Arial, sans-serif; background: white; color: #1e293b; line-height: 1.5; }
+  .print-page { max-width: 100%; margin: 0 auto; background: white; page-break-after: always; break-after: page; }
+  .print-page:last-child { page-break-after: auto; break-after: auto; }
+  .print-header { width: 100%; height: 120px; margin-bottom: 20px; background: #ffffff; display: flex; align-items: center; justify-content: center; }
+  .print-header img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .print-patient-info { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 20px; font-size: 16px; margin-bottom: 20px; padding: 12px 0; border-bottom: 1px dashed #cbd5e1; }
+  .print-patient-info p { margin: 4px 0; }
+  .print-patient-info strong { color: #0f172a; }
+  .print-test-section { margin-bottom: 28px; }
+  .print-test-section h4 { font-size: 20px; color: #0f172a; margin: 0 0 12px 0; border-left: 4px solid #3b82f6; padding-left: 12px; }
+  .print-results-table { width: 100%; border-collapse: collapse; font-size: 15px; margin-bottom: 14px; }
+  .print-results-table th { background: #f1f5f9; color: #0f172a; font-weight: 600; text-align: left; padding: 10px 8px; border: 1px solid #e2e8f0; }
+  .print-results-table td { padding: 8px 8px; border: 1px solid #e2e8f0; vertical-align: top; }
+  .print-results-table tr:nth-child(even) td { background: #fafbfc; }
+  .print-footer { margin-top: 180px; padding-top: 20px; display: flex; justify-content: flex-end; }
+  .signature-area { text-align: right; font-size: 16px; }
+  .signature-area p { margin: 2px 0; }
+  .signature-area strong { color: #0f172a; }
+  @media print { body { background: white; } .print-page { box-shadow: none; } }
+  @media (max-width: 600px) { .print-patient-info { grid-template-columns: 1fr; gap: 4px; } .print-results-table { font-size: 13px; } }
+</style>
+</head>
+<body>
+${pages}
+</body>
+</html>`;
+  };
+
+  // ---- Print all ----
+  const handlePrintAll = () => {
+    const tests = getSelectedTests();
+    if (!tests.length) {
+      alert('No tests to print.');
+      return;
+    }
+    if (!selectedPatient) {
+      alert('No patient selected.');
+      return;
+    }
+
+    const html = buildPrintHtml(tests);
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    document.body.appendChild(iframe);
+
+    const iframeDoc = iframe.contentWindow.document;
+    iframeDoc.open();
+    iframeDoc.write(html);
+    iframeDoc.close();
+
+    const images = iframeDoc.querySelectorAll('img');
+    let loadedCount = 0;
+    const totalImages = images.length;
+
+    if (totalImages === 0) {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    } else {
+      images.forEach((img) => {
+        if (img.complete) {
+          loadedCount++;
+          if (loadedCount === totalImages) {
+            iframe.contentWindow.focus();
+            iframe.contentWindow.print();
+          }
+        } else {
+          img.onload = () => {
+            loadedCount++;
+            if (loadedCount === totalImages) {
+              iframe.contentWindow.focus();
+              iframe.contentWindow.print();
+            }
+          };
+          img.onerror = () => {
+            loadedCount++;
+            if (loadedCount === totalImages) {
+              iframe.contentWindow.focus();
+              iframe.contentWindow.print();
+            }
+          };
+        }
+      });
+    }
+
+    iframe.contentWindow.onafterprint = () => {
+      document.body.removeChild(iframe);
+    };
   };
 
   // ---- Render ----
@@ -442,7 +660,7 @@ const Reporting = () => {
             {isSearching && <span className="search-spinner">⏳</span>}
             {searchResults.length > 0 && (
               <ul className="search-results">
-                {searchResults.map(p => (
+                {searchResults.map((p) => (
                   <li key={p.id} onClick={() => handlePatientSelect(p)}>
                     {p.first_name} {p.last_name} ({p.patient_id}) - {p.mobile}
                   </li>
@@ -451,6 +669,19 @@ const Reporting = () => {
             )}
             {searchQuery && !isSearching && searchResults.length === 0 && (
               <div className="no-results">No patients found</div>
+            )}
+
+            {!searchQuery && recentPatients.length > 0 && (
+              <div className="recent-patients">
+                <div className="recent-label">🕒 Recent Patients</div>
+                <ul className="recent-list">
+                  {recentPatients.map((p) => (
+                    <li key={p.id} onClick={() => handlePatientSelect(p)}>
+                      {p.first_name} {p.last_name} ({p.patient_id})
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
         )}
@@ -465,29 +696,36 @@ const Reporting = () => {
               value={selectedBookingOption}
               onChange={(e) => {
                 setSelectedBookingOption(e.target.value);
-                // Re‑initialize results for the new selection
                 const init = {};
                 let allTests = [];
                 if (e.target.value === 'all') {
-                  bookings.forEach(b => allTests = allTests.concat(b.tests));
+                  bookings.forEach((b) => (allTests = allTests.concat(b.tests)));
                 } else {
-                  const booking = bookings.find(b => b.booking_id === parseInt(e.target.value));
+                  const booking = bookings.find(
+                    (b) => b.booking_id === parseInt(e.target.value)
+                  );
                   if (booking) allTests = booking.tests;
                 }
-                allTests.forEach(t => {
+                allTests.forEach((t) => {
                   init[t.id] = {};
                   const fields = getTestFields(t.test_name);
-                  fields.forEach(f => { init[t.id][f.key] = ''; });
-                  init[t.id].notes = '';
+                  fields.forEach((f) => {
+                    const report = reportsMap[t.id];
+                    if (report && report.result_data && report.result_data[f.key] !== undefined) {
+                      init[t.id][f.key] = report.result_data[f.key];
+                    } else {
+                      init[t.id][f.key] = '';
+                    }
+                  });
+                  init[t.id].notes = reportsMap[t.id]?.result_data?.notes || '';
                 });
                 setResults(init);
-                setIsPrinting(false);
               }}
               className="booking-select"
             >
               <option value="">-- Choose --</option>
               <option value="all">📌 Combine All</option>
-              {bookings.map(b => (
+              {bookings.map((b) => (
                 <option key={b.booking_id} value={b.booking_id}>
                   # {b.booking_id} ({b.status}) - {new Date(b.booking_date).toLocaleDateString()}
                 </option>
@@ -511,62 +749,107 @@ const Reporting = () => {
                   ? 'All Tests (Combined)'
                   : `Tests for Booking #${selectedBookingOption}`}
               </h3>
-              {selectedTests.map(test => {
+              {selectedTests.map((test) => {
                 const fields = getTestFields(test.test_name);
+                const isMalariaOrDengue = test.test_name === 'Malaria' || test.test_name === 'Dengue';
+                const report = reportsMap[test.id];
+                const hasReport = !!report;
+                const isEditing = editingState[test.id] ?? !hasReport;
+                const reportStatus = report?.status || '';
+
                 return (
                   <div key={test.id} className="test-entry">
-                    <h4>{test.test_name}</h4>
-                    <div className="fields-grid">
-                      {fields.map(field => (
-                        <div key={field.key} className="field-group">
-                          <label>{field.label}</label>
-                          <input
-                            type="text"
-                            value={results[test.id]?.[field.key] || ''}
-                            onChange={(e) => handleResultChange(test.id, field.key, e.target.value)}
-                            placeholder={`Enter ${field.label}`}
-                          />
-                          <span className="field-unit">{field.unit}</span>
-                          <small className="field-ref">{field.ref}</small>
-                        </div>
-                      ))}
-                      <div className="field-group full-width">
-                        <label>Notes</label>
-                        <textarea
-                          value={results[test.id]?.notes || ''}
-                          onChange={(e) => handleResultChange(test.id, 'notes', e.target.value)}
-                          placeholder="Additional notes..."
-                          rows="2"
-                        />
+                    <div className="test-header">
+                      <h4>{test.test_name}</h4>
+                      <div className="test-status">
+                        {hasReport && (
+                          <span className={`status-badge status-${reportStatus.toLowerCase()}`}>
+                            {reportStatus}
+                          </span>
+                        )}
+                        {!hasReport && (
+                          <span className="status-badge status-draft">Not Started</span>
+                        )}
                       </div>
+                    </div>
+                    <div className="fields-grid">
+                      {fields.map((field) => {
+                        const value = results[test.id]?.[field.key] || '';
+                        const color = getHighlightColor(value, field.ref);
+                        const inputStyle = color ? { color } : {};
+                        return (
+                          <div key={field.key} className="field-group">
+                            <label>{field.label}</label>
+                            <input
+                              type="text"
+                              value={value}
+                              onChange={(e) =>
+                                handleResultChange(test.id, field.key, e.target.value)
+                              }
+                              placeholder={`Enter ${field.label}`}
+                              style={inputStyle}
+                              disabled={!isEditing}
+                              className={!isEditing ? 'field-disabled' : ''}
+                            />
+                            {!isMalariaOrDengue && (
+                              <>
+                                <span className="field-unit">{field.unit}</span>
+                                <small className="field-ref">{field.ref}</small>
+                              </>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {/* Per‑test actions */}
+                    <div className="test-actions">
+                      {hasReport && (
+                        <button
+                          className="action-btn download-btn"
+                          onClick={() => handlePrintSingle(test)}
+                        >
+                          📄 Download
+                        </button>
+                      )}
+                      {isEditing ? (
+                        <>
+                          <button
+                            className="action-btn draft-btn"
+                            onClick={() => saveSingleReport(test, 'Draft')}
+                          >
+                            💾 Save Draft
+                          </button>
+                          <button
+                            className="action-btn submit-btn"
+                            onClick={() => saveSingleReport(test, 'Pending')}
+                          >
+                            📤 Submit
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          className="action-btn edit-btn"
+                          onClick={() => toggleEdit(test.id)}
+                        >
+                          ✏️ Edit
+                        </button>
+                      )}
                     </div>
                   </div>
                 );
               })}
 
-              {/* Global Action Buttons */}
+              {/* ─── Global Actions: only two buttons ──────────── */}
               <div className="global-actions">
-                <button
-                  onClick={handleSaveAllDraft}
-                  disabled={savingAll}
-                  className="action-btn draft-btn"
-                >
+                <button onClick={handleSaveAllDraft} disabled={savingAll} className="action-btn draft-btn">
                   {savingAll ? 'Saving...' : '💾 Save All Draft'}
                 </button>
-                <button
-                  onClick={handleSubmitAll}
-                  disabled={savingAll}
-                  className="action-btn submit-btn"
-                >
-                  {savingAll ? 'Submitting...' : '📤 Submit All for Approval'}
-                </button>
-                <button
-                  onClick={handlePrintAll}
-                  className="action-btn print-btn"
-                >
-                  🖨️ Preview & Print All
+                <button onClick={handlePrintAll} className="action-btn print-btn">
+                  📄 Download All
                 </button>
               </div>
+
               {success && <div className="reporting-success">{success}</div>}
               {error && <div className="reporting-error">{error}</div>}
             </>
@@ -575,9 +858,6 @@ const Reporting = () => {
           )}
         </section>
       )}
-
-      {/* Print View (hidden unless printing) */}
-      {isPrinting && <PrintReport />}
     </div>
   );
 };

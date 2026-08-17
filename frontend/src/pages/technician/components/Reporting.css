@@ -321,128 +321,89 @@
     width: 100%;
   }
 }
-
-/* ════════════════════════════════════════════ */
-/* ─── PRINT STYLES ───                        */
-/* ════════════════════════════════════════════ */
-
-.print-container {
-  display: none; /* hidden until printing */
+/* ─── Recent Patients ────────────────────────────────────────── */
+.recent-patients {
+  margin-top: 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  max-height: 240px;
+  overflow-y: auto;
 }
 
-@media print {
-  /* Hide everything except the print container */
-  body * {
-    visibility: hidden;
-  }
-  .print-container,
-  .print-container * {
-    visibility: visible;
-  }
-  .print-container {
-    display: block;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    padding: 40px;
-    background: white;
-    font-size: 12px;
-    font-family: Arial, Helvetica, sans-serif;
-  }
-
-  /* Each test gets a new page */
-  .print-page {
-    page-break-after: always;
-    margin-bottom: 20px;
-  }
-  .print-page:last-child {
-    page-break-after: avoid;
-  }
-
-  .page-break {
-    page-break-after: always;
-    border: none;
-  }
-
-  .print-header {
-    display: flex;
-    justify-content: space-between;
-    border-bottom: 2px solid #1e293b;
-    padding-bottom: 10px;
-    margin-bottom: 20px;
-  }
-  .print-logo {
-    font-size: 24px;
-    font-weight: bold;
-    color: #3b82f6;
-  }
-  .print-title {
-    font-size: 20px;
-    font-weight: bold;
-  }
-
-  .print-patient-info {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 4px 20px;
-    margin-bottom: 20px;
-    padding: 10px 0;
-    border-bottom: 1px solid #e2e8f0;
-  }
-  .print-patient-info p {
-    margin: 0;
-  }
-
-  .print-test-section {
-    margin-bottom: 20px;
-  }
-  .print-test-section h4 {
-    background: #f1f5f9;
-    padding: 6px 10px;
-    margin: 0 0 10px 0;
-    border-radius: 4px;
-    font-size: 14px;
-  }
-
-  .print-results-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 11px;
-  }
-  .print-results-table th {
-    text-align: left;
-    background: #e2e8f0;
-    padding: 6px 8px;
-    border: 1px solid #cbd5e1;
-    font-weight: bold;
-  }
-  .print-results-table td {
-    padding: 6px 8px;
-    border: 1px solid #cbd5e1;
-  }
-
-  .print-notes {
-    margin-top: 8px;
-    font-style: italic;
-  }
-
-  .print-footer {
-    margin-top: 30px;
-    border-top: 1px solid #e2e8f0;
-    padding-top: 16px;
-    display: flex;
-    justify-content: flex-end;
-  }
-  .signature-area {
-    text-align: right;
-  }
-  .signature-area p {
-    margin: 0;
-  }
-
-  /* Hide the print action button (inside the print view) */
-  .print-actions {
-    display: none;
-  }
+.recent-patients .recent-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
+
+.recent-patients .recent-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: #e2e8f0;
+  margin-left: 8px;
+}
+
+.recent-patients .recent-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.recent-patients .recent-list li {
+  padding: 8px 12px;
+  margin-bottom: 4px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s ease, transform 0.1s ease;
+  font-size: 14px;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.recent-patients .recent-list li:hover {
+  background: #e2e8f0;
+  transform: translateX(4px);
+}
+
+.recent-patients .recent-list li:active {
+  background: #cbd5e1;
+  transform: scale(0.98);
+}
+
+.recent-patients .recent-list li::before {
+  content: '👤';
+  font-size: 16px;
+  opacity: 0.7;
+}
+
+/* scrollbar styling (optional) */
+.recent-patients::-webkit-scrollbar {
+  width: 6px;
+}
+.recent-patients::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 10px;
+}
+.recent-patients::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 10px;
+}
+.recent-patients::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/*
+  Printing is now handled entirely outside this stylesheet: "Preview & Print All"
+  opens an isolated print window with its own self-contained inline styles
+  (built in Reporting.jsx). No print-specific CSS is needed here anymore.
+*/

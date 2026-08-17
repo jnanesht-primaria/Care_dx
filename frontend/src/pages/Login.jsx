@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { loginRequest } from "../api/axios";
 import { useAuth } from "../context/AuthContext";
@@ -15,8 +15,17 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showSplash, setShowSplash] = useState(true);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // Simulate logo splash screen
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 1800); // 1.8 seconds – adjust as needed
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -33,12 +42,24 @@ export default function Login() {
     }
   };
 
+  // Splash screen (logo animation)
+  if (showSplash) {
+    return (
+      <div className="splash-screen">
+        <div className="splash-logo-wrapper">
+          <img src="/primaria_logo.png" alt="Primaria Logo" className="splash-logo" />
+        </div>
+      </div>
+    );
+  }
+
+  // Login form
   return (
     <div className="login-page">
       <div className="login-card">
         <div className="login-header">
-          <div className="login-mark">SR</div>
-          <h1>Service Records</h1>
+          <img src="/primaria_logo.png" alt="Primaria Logo" className="login-logo" />
+          <h1>Primaria Healthcare</h1>
           <p>Sign in to continue</p>
         </div>
 
@@ -70,11 +91,7 @@ export default function Login() {
           </button>
         </form>
 
-        <div className="login-footer">
-          <span className="role-tag admin">Admin</span>
-          <span className="role-tag technician">Technician</span>
-          <span className="role-tag receptionist">Receptionist</span>
-        </div>
+        {/* Role tags removed – no longer displayed */}
       </div>
     </div>
   );

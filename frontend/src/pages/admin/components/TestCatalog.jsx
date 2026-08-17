@@ -1,4 +1,3 @@
-// frontend/src/pages/admin/components/TestCatalog.jsx
 import React, { useState, useEffect } from 'react';
 import { getTests, createTest, updateTest, deleteTest, getLaboratories } from '../../../api/admin';
 import './TestCatalog.css';
@@ -7,6 +6,8 @@ const TestCatalog = () => {
   const [tests, setTests] = useState([]);
   const [labs, setLabs] = useState([]);
   const [loading, setLoading] = useState(true);
+
+  // For the full create/edit form (unchanged)
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({
     test_name: '',
@@ -19,6 +20,11 @@ const TestCatalog = () => {
     is_active: true,
   });
 
+  // NEW: For inline rate editing
+  const [rateEditingId, setRateEditingId] = useState(null); // id of the test whose rate is being edited
+  const [editRateValue, setEditRateValue] = useState('');
+
+  // Load data (unchanged)
   const loadData = async () => {
     try {
       const [testsRes, labsRes] = await Promise.all([getTests(), getLaboratories()]);
@@ -35,6 +41,7 @@ const TestCatalog = () => {
     loadData();
   }, []);
 
+  // Full form handlers (unchanged)
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setForm({
@@ -83,11 +90,46 @@ const TestCatalog = () => {
     }
   };
 
+  // NEW: Inline rate handlers
+  const startRateEdit = (test) => {
+    setRateEditingId(test.id);
+    setEditRateValue(test.rate); // pre‑fill with current rate
+  };
+
+  const cancelRateEdit = () => {
+    setRateEditingId(null);
+    setEditRateValue('');
+  };
+
+  const saveRateEdit = async (id) => {
+    try {
+      // We only update the rate – but the API may expect the full object.
+      // Option 1: call updateTest with only the rate (if your backend supports partial updates)
+      // Option 2: fetch the current test data and merge the new rate
+      // For simplicity, we'll send the whole test object but only change the rate.
+      const currentTest = tests.find(t => t.id === id);
+      if (!currentTest) return;
+
+      const updatedTest = {
+        ...currentTest,
+        rate: parseFloat(editRateValue), // ensure it's a number
+      };
+      await updateTest(id, updatedTest);
+      setRateEditingId(null);
+      setEditRateValue('');
+      loadData(); // refresh list
+    } catch (err) {
+      alert('Failed to update rate');
+    }
+  };
+
   if (loading) return <div>Loading...</div>;
 
   return (
     <div>
       <h2>Test Catalog Management</h2>
+
+      {/* Full form – keep as is if you still need to add/edit all fields */}
       <form onSubmit={handleSubmit} className="admin-form">
         <input name="test_name" placeholder="Test Name*" value={form.test_name} onChange={handleChange} required />
         <input name="rate" placeholder="Rate (₹)*" type="number" step="0.01" value={form.rate} onChange={handleChange} required />
@@ -109,9 +151,19 @@ const TestCatalog = () => {
         {editingId && <button type="button" onClick={() => { setEditingId(null); setForm({ test_name: '', rate: '', lab_id: '', category: '', reference_range: '', report_template_text: '', report_template_file_path: '', is_active: true }); }}>Cancel</button>}
       </form>
 
+      {/* Table with inline rate editing */}
       <table className="admin-table">
         <thead>
-          <tr><th>ID</th><th>Test Name</th><th>Category</th><th>Reference Range</th><th>Lab</th><th>Rate (₹)</th><th>Active</th><th>Actions</th></tr>
+          <tr>
+            <th>ID</th>
+            <th>Test Name</th>
+            <th>Category</th>
+            <th>Reference Range</th>
+            <th>Lab</th>
+            <th>Rate (₹)</th>
+            <th>Active</th>
+            <th>Actions</th>
+          </tr>
         </thead>
         <tbody>
           {tests.map(test => (
@@ -121,9 +173,36 @@ const TestCatalog = () => {
               <td>{test.category || '-'}</td>
               <td>{test.reference_range || '-'}</td>
               <td>{test.lab_name || '-'}</td>
-              <td>₹{test.rate}</td>
+              <td>
+                {rateEditingId === test.id ? (
+                  // Inline editing mode for this row
+                  <div style={{ display: 'flex', gap: '5px' }}>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={editRateValue}
+                      onChange={(e) => setEditRateValue(e.target.value)}
+                      autoFocus
+                    />
+                    <button onClick={() => saveRateEdit(test.id)}>Save</button>
+                    <button onClick={cancelRateEdit}>Cancel</button>
+                  </div>
+                ) : (
+                  // Display rate and an "Edit Rate" button
+                  <span>
+                    ₹{test.rate}
+                    <button
+                      style={{ marginLeft: '8px', padding: '2px 6px' }}
+                      onClick={() => startRateEdit(test)}
+                    >
+                      ✏️
+                    </button>
+                  </span>
+                )}
+              </td>
               <td>{test.is_active ? 'Yes' : 'No'}</td>
               <td>
+                {/* Keep the existing Edit (full form) and Delete buttons */}
                 <button onClick={() => handleEdit(test)}>Edit</button>
                 <button onClick={() => handleDelete(test.id)}>Delete</button>
               </td>

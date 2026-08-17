@@ -354,3 +354,26 @@ class Report(db.Model):
             "created_at": self.created_at.isoformat() if self.created_at else None,
             "updated_at": self.updated_at.isoformat() if self.updated_at else None,
         }
+class Payment(db.Model):
+    __tablename__ = 'payments'
+    id = db.Column(db.Integer, primary_key=True)
+    booking_id = db.Column(db.Integer, db.ForeignKey('bookings.id'), nullable=False)
+    patient_id = db.Column(db.Integer, db.ForeignKey('patients.id'), nullable=False)
+    amount = db.Column(db.Numeric(10, 2), nullable=False)
+    payment_mode = db.Column(db.String(20))
+    paid_by = db.Column(db.Integer, db.ForeignKey('users.id'))
+    paid_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    booking = db.relationship('Booking')
+    patient = db.relationship('Patient')
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "booking_id": self.booking_id,
+            "patient_id": self.patient_id,
+            "amount": float(self.amount),
+            "payment_mode": self.payment_mode,
+            "paid_by": self.paid_by,
+            "paid_at": self.paid_at.isoformat() if self.paid_at else None,
+        }

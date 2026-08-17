@@ -1,56 +1,105 @@
 /* frontend/src/pages/Login.css */
 
+/* ----- Splash Screen (Logo Loading Animation) ----- */
+.splash-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f0f8ff; /* soft primaria blue-white */
+  z-index: 9999;
+  animation: splashFadeOut 0.6s ease-in forwards;
+  animation-delay: 1.4s; /* visible for 1.4s then fade out */
+}
+
+@keyframes splashFadeOut {
+  0% {
+    opacity: 1;
+    visibility: visible;
+  }
+  100% {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+.splash-logo-wrapper {
+  animation: logoBounce 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes logoBounce {
+  0% {
+    transform: scale(0.7);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.splash-logo {
+  max-width: 180px;
+  height: auto;
+  display: block;
+}
+
+/* ----- Login Page ----- */
 .login-page {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: #f0f4f8;
+  background: #f0f8ff; /* soft primaria blue */
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  padding: 20px;
 }
 
 .login-card {
-  background: white;
+  background: #ffffff;
   padding: 40px 36px;
-  border-radius: 20px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  border-radius: 24px;
+  box-shadow: 0 12px 40px rgba(0, 50, 100, 0.10);
   width: 100%;
   max-width: 400px;
-  transition: transform 0.2s;
+  border: 1px solid rgba(37, 99, 235, 0.08);
+  transition: transform 0.2s ease;
 }
 
+.login-card:hover {
+  transform: translateY(-2px);
+}
+
+/* ----- Header with Logo ----- */
 .login-header {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 28px;
 }
 
-.login-mark {
-  display: inline-block;
-  background: linear-gradient(135deg, #2563eb, #3b82f6);
-  color: white;
-  font-size: 28px;
-  font-weight: 700;
-  width: 56px;
-  height: 56px;
-  line-height: 56px;
-  border-radius: 16px;
+.login-logo {
+  max-width: 80px;
+  height: auto;
   margin-bottom: 12px;
-  text-align: center;
+  display: inline-block;
 }
 
 .login-header h1 {
-  font-size: 24px;
-  font-weight: 600;
-  color: #1e293b;
+  font-size: 26px;
+  font-weight: 700;
+  color: #1e3a6f; /* primaria deep blue */
   margin: 0 0 4px;
+  letter-spacing: -0.3px;
 }
 
 .login-header p {
-  color: #64748b;
-  font-size: 14px;
+  color: #5f7d9c;
+  font-size: 15px;
   margin: 0;
+  font-weight: 400;
 }
 
+/* ----- Form ----- */
 .login-form {
   display: flex;
   flex-direction: column;
@@ -60,81 +109,90 @@
 .login-form label {
   font-size: 14px;
   font-weight: 500;
-  color: #334155;
+  color: #2c3e50;
   margin-top: 8px;
 }
 
 .login-form input {
-  padding: 12px 14px;
-  border: 1px solid #d1d5db;
-  border-radius: 10px;
+  padding: 12px 16px;
+  border: 1px solid #dbe4ed;
+  border-radius: 12px;
   font-size: 15px;
   transition: border-color 0.2s, box-shadow 0.2s;
-  background: #fafbfc;
+  background: #f9fcff;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .login-form input:focus {
   outline: none;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
-  background: white;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+  background: #ffffff;
 }
 
 .login-error {
-  background: #fee2e2;
-  color: #b91c1c;
-  padding: 10px 12px;
-  border-radius: 8px;
+  background: #fee9e7;
+  color: #b22234;
+  padding: 10px 14px;
+  border-radius: 10px;
   font-size: 14px;
   margin: 8px 0 4px;
+  border-left: 4px solid #b22234;
 }
 
 .login-form button {
-  margin-top: 16px;
-  padding: 12px;
-  background: linear-gradient(135deg, #2563eb, #3b82f6);
-  color: white;
+  margin-top: 18px;
+  padding: 14px;
+  background: linear-gradient(135deg, #1a56db, #2563eb);
+  color: #ffffff;
   border: none;
-  border-radius: 10px;
+  border-radius: 12px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: opacity 0.2s, transform 0.1s;
+  letter-spacing: 0.3px;
 }
 
 .login-form button:hover:not(:disabled) {
-  opacity: 0.9;
+  opacity: 0.92;
+  transform: translateY(-1px);
 }
 
 .login-form button:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  transform: none;
 }
 
-.login-footer {
-  margin-top: 28px;
-  display: flex;
-  justify-content: center;
-  gap: 12px;
-  flex-wrap: wrap;
+/* ----- Role tags removed – no footer ----- */
+
+/* ----- Responsive Design ----- */
+@media (max-width: 480px) {
+  .login-card {
+    padding: 30px 20px;
+    border-radius: 16px;
+    margin: 0 16px;
+  }
+  .login-header h1 {
+    font-size: 22px;
+  }
+  .login-logo {
+    max-width: 60px;
+  }
+  .splash-logo {
+    max-width: 120px;
+  }
+  .login-form input {
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+  .login-form button {
+    font-size: 15px;
+    padding: 12px;
+  }
 }
 
-.role-tag {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 4px 12px;
-  border-radius: 20px;
-  color: white;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.role-tag.admin {
-  background: #8b5cf6;
-}
-.role-tag.technician {
-  background: #0ea5e9;
-}
-.role-tag.receptionist {
-  background: #10b981;
-}
+/* Optional: smooth transition from splash to form */
+/* The form appears naturally because splash is hidden via animation */

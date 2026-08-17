@@ -474,3 +474,53 @@
   border-color: #3b82f6;
   box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
 }
+.invoice-modal-overlay {
+  position: fixed; inset: 0; background: rgba(15,23,42,0.5);
+  display: flex; align-items: center; justify-content: center; z-index: 1000;
+}
+.invoice-modal {
+  background: #fff; border-radius: 8px; padding: 24px;
+  width: 90%; max-width: 560px; max-height: 85vh; overflow-y: auto;
+}
+/* ─── Payment completed state ──────────────────────────────────── */
+.paid-badge {
+  background: #22c55e;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 2px 14px;
+  border-radius: 20px;
+  margin-left: 12px;
+}
+
+.payment-completed {
+  background: #f0fdf4;
+  border: 2px solid #86efac;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  margin-top: 16px;
+}
+
+.payment-completed-message {
+  font-size: 18px;
+  font-weight: 600;
+  color: #16a34a;
+  margin-bottom: 12px;
+}
+
+.download-invoice-btn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 12px 32px;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.download-invoice-btn:hover {
+  background: #1d4ed8;
+}
